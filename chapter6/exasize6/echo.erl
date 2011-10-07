@@ -2,7 +2,8 @@
 -export([start/0, print/1, stop/0, loop/0]).
 
 start() ->
-  register(pid_a, spawn(echo, loop, [])),
+  Pid = spawn_link(echo, loop, []),
+  register(pid_a, Pid),
 	ok.
 	
 print(Term) ->
@@ -11,15 +12,13 @@ print(Term) ->
  ok.
 
 stop() ->
- pid_a ! stop,
+ exit(pid_a),
  ok.
 
 loop() ->
   receive
 	  [Term] ->
 		  io:format("pid_a:~p~n", [Term]),
-			loop();
-		stop ->
-		  ok
+			loop()
   end.
-	
+

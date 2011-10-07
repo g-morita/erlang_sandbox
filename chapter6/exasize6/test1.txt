@@ -1,0 +1,6 @@
+c(my_supervisor).
+my_supervisor:start_link(my_supervisor, [{add_two, start,[], transient}]).
+whereis(add_two).
+exit(whereis(add_two), kill).
+whereis(add_two).
+
