@@ -2,6 +2,8 @@
 -export([start/0, stop/0, upgrade/1]).
 -export([write/2, read/1, delete/1]).
 -export([init/0, loop/1]).
+-export([code_upgrade/0]).
+
 -vsn(1.0).
 
 start() ->
@@ -9,6 +11,9 @@ start() ->
 
 stop()->
   my_db ! stop.
+
+code_upgrade() ->
+  my_db ! upgrade.
 
 upgrade(Data) ->
   my_db ! {upgrade, Data}.
@@ -27,7 +32,7 @@ init() ->
   loop(db:new()).
 
 loop(Db) ->
-  receive
+  receive			 
     {write, Key, Data} ->
        loop(db:write(Key, Data, Db));
     {read, Pid, Key} ->
@@ -35,9 +40,12 @@ loop(Db) ->
        loop(Db);
     {delete, Key} ->
        loop(db:delete(Key, Db));
-    {upgrade, Data} ->
-      NewDb = db:convert(Data, Db),
-      my_db:loop(NewDb);
+	  code_upgrade ->
+		   NewDb = db:code_upgrade(Db),
+       loop(NewDb);
+%    {upgrade, Data} ->
+%      NewDb = db:convert(Data, Db),
+%      my_db:loop(NewDb);
     stop ->
       db:destroy(Db)
   end. 
