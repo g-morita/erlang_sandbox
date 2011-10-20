@@ -11,7 +11,7 @@ start() ->
 
 stop()->
   my_db ! stop.
-	
+  
 upgrade(Data) ->
   my_db ! {upgrade, Data}.
 
@@ -37,17 +37,17 @@ code_upgrade() ->
 
 loop(Db) ->
   receive
-	  % アップグレード
-	  {code_upgrade, Pid} ->
+    % アップグレード
+    {code_upgrade, Pid} ->
        io:format("my_db:code_upgrade_before~n", []),
-			 % 古い版の関数を呼び出すと、新しい版のDBが返り、
-			 % 且つ、新しい版がロードされる
-		   NewDb = db:code_upgrade(Db),
+       % 古い版の関数を呼び出すと、新しい版のDBが返り、
+       % 且つ、新しい版がロードされる
+       NewDb = db:code_upgrade(Db),
        io:format("my_db:code_upgrade_after~n", []),
-			 % デバッグ用に新しい版のDbを返す
+       % デバッグ用に新しい版のDbを返す
        Pid ! NewDb,
        loop(NewDb);
-			 
+       
     {write, Key, Data} ->
        loop(db:write(Key, Data, Db));
     {read, Pid, Key} ->

@@ -9,7 +9,7 @@
 %code_upgrade(List) ->
 %  io:format("gb_trees_db:code_upgrade~n", []),  
 %  T = ets:new(table, [set]),
-%	insert_table(T, List).
+% insert_table(T, List).
 
 % ETSのテーブルにリスト型DBの要素を登録する。勝手につくった関数。
 %insert_table(T, [Element|List]) ->
@@ -22,7 +22,7 @@
 code_upgrade(List) ->
   io:format("gb_trees_db:code_upgrade~n", []),  
   Db = new(),
-	insert_table(Db, List).
+  insert_table(Db, List).
 
 % 本来は、次回のアップデートに備えたコードが必要なんだろうな。。
 
