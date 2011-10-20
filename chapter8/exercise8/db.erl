@@ -1,43 +1,44 @@
 -module(db).
--export([new/0, destroy/1, write/3, delete/2, read/2, convert/2]).
--export([code_upgrade/1, insert_table/2]).
--vsn(1.2).
+-export([new/0, destroy/1, write/3, delete/2, read/2, match/2]).
+-export([code_upgrade/1]).
 
 % 問題が指定した関数
-code_upgrade(List) ->
-  T = ets:new(table, [set]),
-	insert_table(T, List).
+code_upgrade(Db) ->
+  io:format("list_db:code_upgrade~n", []),
 
-% ETSのテーブルにリスト型DBの要素を登録する。勝手につくった関数。
-insert_table(T, [Element|List]) ->
-  ets:insert(T, Element),
-  insert_table(T, List);
-insert_table(T, []) -> T.
+  % ここで gb_trees_db がロードされる
+  code:load_file(db),
+  % gb_trees_db の関数呼び出し
+  db:code_upgrade(Db).
 
-new() -> gb_trees:empty().
 
-write(Key, Data, Db) ->
-  io:format("gb_trees_db:write~n", []),
-  gb_trees:insert(Key, Data, Db).
 
-read(Key, Db) ->
-  io:format("gb_trees_db:read~n", []),
-  case gb_trees:lookup(Key, Db) of
-    none         -> {error, instance};
-    {value, Data} -> {ok, Data}
-  end.
+new() -> [].
 
-destroy(_Db) -> ok.
+destroy(_) -> ok.
 
-delete(Key, Db) -> gb_trees:delete(Key, Db).
+write(Key, Element, Db) ->
+  % ログ出力
+  io:format("list_db:write~n", []),
+  [{Key, Element}| Db].
 
-convert(dict,Dict) ->
-  dict(dict:fetch_keys(Dict), Dict, new());
-convert(_, Data) ->
-  Data.
+delete(Key, Db) -> delete_acc(Key, Db, []).
+delete_acc(_, [], Acc) -> Acc;
+delete_acc(Key, [{Key,_}|T], Acc) -> delete_acc(Key, T, Acc);
+delete_acc(Key, [{K,E}|T], Acc) -> delete_acc(Key, T, [{K,E}|Acc]).
 
-dict([Key|Tail], Dict, GbTree) ->
-  Data = dict:fetch(Key, Dict),
-  NewGbTree  = gb_trees:insert(Key, Data, GbTree),
-  dict(Tail, Dict, NewGbTree);
-dict([], _, GbTree) -> GbTree.
+read(_, []) -> {error, instance};
+read(Key, [{Key,Element}|_]) ->
+  % ログ出力
+  io:format("list_db:read~n", []),
+  {ok, Element};
+read(Key, [_|T]) -> read(Key, T).
+
+match(Element, Db) -> match_acc(Element, Db, []).
+match_acc(_, [], Acc) -> Acc;
+match_acc(Element, [{Key,Element}|T], Acc) ->
+  match_acc(Element, T, [Key|Acc]);
+match_acc(Element, [_|T], Acc) ->
+  match_acc(Element, T, Acc).
+
+

@@ -1,1 +1,0 @@
-gouichi@morita-no-MacBook-Air.local.99833
